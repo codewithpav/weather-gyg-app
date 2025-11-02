@@ -6,7 +6,7 @@ from affiliate import city_to_id, gyg_banner
 st.set_page_config(page_title="Trip Planner", page_icon="🗺️", layout="centered")
 st.title("AI Trip Planner 🗺️")
 
-st.caption("Type a city, get live weather and an AI-suggested mini itinerary.")
+st.caption("Type a city to see live weather, get AI-powered travel ideas, and discover bookable activities via GetYourGuide.")
 
 city = st.text_input("Enter a city name:")
 
