@@ -63,7 +63,7 @@ streamlit run app.py
    - Show weather details  
    - Show AI-generated suggestions
 
-*(You’ll teach detailed prompt engineering, structure, and error handling later.)*
+*(You’ll learn detailed prompt engineering, structure, and error handling later.)*
 
 ---
 
@@ -86,7 +86,7 @@ streamlit run app.py
 1. Go to [Streamlit Community Cloud](https://streamlit.io/cloud)
 2. Sign in with GitHub and select your repo + main app file (e.g., `app.py`)
 3. Add your API keys under **Secrets / Environment Variables**
-4. Click **Deploy** and share your live link 🌍
+4. Click **Deploy** and share your live link
 
 ---
 
