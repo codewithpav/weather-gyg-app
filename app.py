@@ -5,6 +5,7 @@ from affiliate import city_to_id, gyg_banner
 
 st.set_page_config(page_title="Trip Planner", page_icon="🗺️", layout="centered")
 st.title("AI Trip Planner 🗺️")
+
 st.caption("Type a city, get live weather and an AI-suggested mini itinerary.")
 
 city = st.text_input("Enter a city name:")
@@ -12,6 +13,7 @@ city = st.text_input("Enter a city name:")
 
 if st.button("Get Itinerary"):
     if city:
+
         weather = weathercheck(city)
 
         # Example: display weather title + icon side-by-side
@@ -32,6 +34,16 @@ if st.button("Get Itinerary"):
         # 💬 Format into a nice sentence
 
         st.write(reply)
+
         gyg_banner(city)
+
+
     else:
         st.warning("Please enter a city name first.")
+
+st.markdown("""
+---
+<div style='text-align: center; font-size: 0.9em; color: gray;'>
+Built by Pav · Made to help others learn Python, APIs, Gen AI, Prompt Engineering & Streamlit
+</div>
+""", unsafe_allow_html=True)
