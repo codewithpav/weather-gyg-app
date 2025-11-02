@@ -44,6 +44,6 @@ if st.button("Get Itinerary"):
 st.markdown("""
 ---
 <div style='text-align: center; font-size: 0.9em; color: gray;'>
-Built by Pav · Made to help others learn Python, APIs, Gen AI, Prompt Engineering & Streamlit
+Built by Pav · Made to help others learn Python, APIs, Gen AI, Prompt Engineering & Streamlit. [Follow the step-by-step beginner guide](GUIDE.md)
 </div>
 """, unsafe_allow_html=True)

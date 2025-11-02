@@ -52,7 +52,7 @@ def genItinerary(city, weather):
         temperature=0.6         # adds variety but keeps it stable
     )
 
-    # 🖨️ Display result
+    # Display result
     reply = response.choices[0].message.content
 
     return reply
