@@ -90,7 +90,41 @@ export default function LandingPage() {
           </div>
         </header>
 
-        <header className="mx-auto max-w-xl rounded-3xl border border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50/60 to-white px-6 py-8 text-center shadow-sm sm:px-10 sm:py-10">
+        <header className="mx-auto max-w-2xl rounded-3xl border border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50/60 to-white px-6 py-8 text-center shadow-sm sm:px-10 sm:py-10">
+          <div className="relative mb-5 h-40 overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-sky-100 via-cyan-50 to-emerald-100">
+            <div className="absolute -left-6 top-6 h-24 w-40 rotate-6 rounded-[40%] border-2 border-white/80" />
+            <div className="absolute left-20 top-2 h-32 w-56 -rotate-12 rounded-[45%] border-2 border-white/70" />
+            <div className="absolute right-4 top-6 h-28 w-40 rotate-12 rounded-[42%] border-2 border-white/70" />
+
+            <svg
+              viewBox="0 0 420 160"
+              className="absolute inset-0 h-full w-full"
+              aria-hidden="true"
+            >
+              <path
+                d="M20 120 C 80 80, 120 80, 170 100 S 260 140, 330 105 S 385 70, 410 60"
+                fill="none"
+                stroke="rgba(15,23,42,0.25)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="5 7"
+              />
+              <path
+                d="M30 50 C 80 30, 120 45, 180 62 S 300 88, 390 42"
+                fill="none"
+                stroke="rgba(2,132,199,0.3)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            <div className="absolute left-[14%] top-[62%] h-6 w-6 rounded-full border-2 border-white bg-slate-900 shadow-md" />
+            <div className="absolute left-[46%] top-[48%] h-7 w-7 rounded-full border-2 border-white bg-emerald-600 shadow-md" />
+            <div className="absolute right-[12%] top-[34%] h-6 w-6 rounded-full border-2 border-white bg-sky-600 shadow-md" />
+
+            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/45 to-transparent" />
+          </div>
+
           <span className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-white/90 px-3 py-1 text-xs text-slate-500 shadow-sm">
             Weather-smart city planning
           </span>
