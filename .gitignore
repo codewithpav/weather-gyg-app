@@ -1,13 +1,24 @@
-# Python
-__pycache__/
-*.pyc
+# Environment
 .env
+.env.local
+.env*.local
 
-# OS
+# Dependencies and build output
+node_modules
+.next
+out
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
 .DS_Store
+.idea/
+.venv/
+__pycache__/
 
-# Streamlit
-.streamlit/secrets.toml
-
-# other
+# Misc
 keys.txt
