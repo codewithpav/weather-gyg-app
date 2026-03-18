@@ -3,7 +3,6 @@ import { OutfitCard } from "./OutfitCard";
 import { ActivityCard } from "./ActivityCard";
 import { TipsCard } from "./TipsCard";
 import { CityHero } from "./CityHero";
-import { SwipeDeck } from "./SwipeDeck";
 import {
   makeActivityPreferenceKey,
   type ActivityPreferenceState,
@@ -298,78 +297,32 @@ export const ResultsLayout: React.FC<ResultsLayoutProps> = (props) => {
                   <div className="h-56 animate-pulse rounded-3xl border border-slate-100 bg-white" />
                 </div>
               ) : (
-                <div>
-                  <div className="sm:hidden">
-                    {filteredFreeActivities.length > 0 ? (
-                      <SwipeDeck
-                        items={filteredFreeActivities}
-                        getKey={(item, idx) => `${item.title}-${idx}`}
-                        onSwipe={(item, direction) =>
-                          onActivityPreferenceChange?.(
-                            "best_now",
-                            item.title,
-                            direction === "right" ? "saved" : "dismissed"
-                          )
-                        }
-                        onUndoSwipe={(item) =>
-                          onActivityPreferenceChange?.("best_now", item.title, null)
-                        }
-                        renderCard={(item, idx) => (
-                          <ActivityCard
-                            key={`${item.title}-${idx}`}
-                            city={city}
-                            reasonLabel={reasonLabel}
-                            showPriceLevel={false}
-                            showPreferenceActions={false}
-                            activityState={getActivityPreference("best_now", item.title)}
-                            onChangeActivityState={(next) =>
-                              onActivityPreferenceChange?.("best_now", item.title, next)
-                            }
-                            trackingContext={{
-                              section: "best_now",
-                              position: idx + 1,
-                              selectedVibes,
-                              weatherSummary,
-                            }}
-                            {...item}
-                          />
-                        )}
-                      />
-                    ) : (
-                      <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-                        No activities match your current display filters. Try turning off
-                        &quot;Hide dismissed&quot; or &quot;Hide completed&quot;.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="hidden sm:grid sm:grid-cols-2 gap-4">
-                    {remainingFreeActivities.map((a, idx) => (
-                      <ActivityCard
-                        key={`${a.title}-${idx}`}
-                        city={city}
-                        reasonLabel={reasonLabel}
-                        showPriceLevel={false}
-                        activityState={getActivityPreference("best_now", a.title)}
-                        onChangeActivityState={(next) =>
-                          onActivityPreferenceChange?.("best_now", a.title, next)
-                        }
-                        trackingContext={{
-                          section: "best_now",
-                          position: idx + 2,
-                          selectedVibes,
-                          weatherSummary,
-                        }}
-                        {...a}
-                      />
-                    ))}
-                    {filteredFreeActivities.length === 0 && (
-                      <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-                        No activities match your current display filters. Try turning off
-                        &quot;Hide dismissed&quot; or &quot;Hide completed&quot;.
-                      </div>
-                    )}
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {remainingFreeActivities.map((a, idx) => (
+                    <ActivityCard
+                      key={`${a.title}-${idx}`}
+                      city={city}
+                      reasonLabel={reasonLabel}
+                      showPriceLevel={false}
+                      activityState={getActivityPreference("best_now", a.title)}
+                      onChangeActivityState={(next) =>
+                        onActivityPreferenceChange?.("best_now", a.title, next)
+                      }
+                      trackingContext={{
+                        section: "best_now",
+                        position: idx + 2,
+                        selectedVibes,
+                        weatherSummary,
+                      }}
+                      {...a}
+                    />
+                  ))}
+                  {filteredFreeActivities.length === 0 && (
+                    <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+                      No activities match your current display filters. Try turning off
+                      &quot;Hide dismissed&quot; or &quot;Hide completed&quot;.
+                    </div>
+                  )}
                 </div>
               )}
             </section>

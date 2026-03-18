@@ -29,7 +29,6 @@ interface ActivityCardProps {
   };
   activityState?: ActivityPreferenceState | null;
   onChangeActivityState?: (next: ActivityPreferenceState | null) => void;
-  showPreferenceActions?: boolean;
 }
 
 const iconButtonClass =
@@ -118,7 +117,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   trackingContext,
   activityState = null,
   onChangeActivityState,
-  showPreferenceActions = true,
 }) => {
   const mapQuery = encodeURIComponent(`${title} ${city}`);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
@@ -197,55 +195,49 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-2">
-          {showPreferenceActions ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() =>
-                  onChangeActivityState?.(activityState === "saved" ? null : "saved")
-                }
-                className={`${actionButtonBase} ${
-                  activityState === "saved"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                    : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  onChangeActivityState?.(
-                    activityState === "dismissed" ? null : "dismissed"
-                  )
-                }
-                className={`${actionButtonBase} ${
-                  activityState === "dismissed"
-                    ? "border-amber-300 bg-amber-50 text-amber-700"
-                    : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                Dismiss
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  onChangeActivityState?.(activityState === "done" ? null : "done")
-                }
-                className={`${actionButtonBase} ${
-                  activityState === "done"
-                    ? "border-sky-300 bg-sky-50 text-sky-700"
-                    : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                Done
-              </button>
-            </div>
-          ) : (
-            <span className="text-[11px] text-slate-500">
-              Swipe right to save, left to skip
-            </span>
-          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(activityState === "saved" ? null : "saved")
+              }
+              className={`${actionButtonBase} ${
+                activityState === "saved"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(
+                  activityState === "dismissed" ? null : "dismissed"
+                )
+              }
+              className={`${actionButtonBase} ${
+                activityState === "dismissed"
+                  ? "border-amber-300 bg-amber-50 text-amber-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Dismiss
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(activityState === "done" ? null : "done")
+              }
+              className={`${actionButtonBase} ${
+                activityState === "done"
+                  ? "border-sky-300 bg-sky-50 text-sky-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Done
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <a
