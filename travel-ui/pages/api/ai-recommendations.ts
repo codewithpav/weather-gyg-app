@@ -15,6 +15,8 @@ type Activity = {
   priceHint?: string;
   icon?: string;
   imageUrl?: string;
+  reasonTags?: string[];
+  rankScore?: number;
   providerLinks?: {
     getYourGuide?: string;
     klook?: string;
@@ -300,6 +302,8 @@ function normalizeActivity(item: any, defaults: Activity): Activity {
     duration: String(item?.duration || defaults.duration),
     priceHint: String(item?.priceHint || defaults.priceHint || ""),
     icon: String(item?.icon || defaults.icon || "✨"),
+    reasonTags: Array.isArray(item?.reasonTags) ? item.reasonTags.slice(0, 3).map(String) : [],
+    rankScore: Number(item?.rankScore || 0),
   };
 }
 
@@ -437,6 +441,174 @@ function ensureLength<T>(arr: T[], count: number, fallbackItems: T[]): T[] {
   return out.slice(0, count);
 }
 
+function includesAny(text: string, terms: string[]): boolean {
+  const value = text.toLowerCase();
+  return terms.some((term) => value.includes(term));
+}
+
+function weatherMode(description: string, temperature: number): "wet" | "cold" | "hot" | "clear" | "neutral" {
+  const d = description.toLowerCase();
+  if (includesAny(d, ["rain", "drizzle", "thunder", "storm", "shower"])) return "wet";
+  if (temperature <= 8 || includesAny(d, ["snow", "sleet", "ice"])) return "cold";
+  if (temperature >= 28) return "hot";
+  if (includesAny(d, ["clear", "sun", "sunny"])) return "clear";
+  return "neutral";
+}
+
+function scoreAndTagActivity(
+  section: "free" | "insider" | "bookable",
+  activity: Activity,
+  context: {
+    description: string;
+    temperature: number;
+    timeOfDay: string;
+    vibes: string[];
+  }
+): Activity {
+  const haystack = `${activity.title} ${activity.description} ${activity.whyNow}`.toLowerCase();
+  const mode = weatherMode(context.description, context.temperature);
+  const tags: string[] = [];
+  let score = 45;
+
+  const indoorTerms = ["indoor", "museum", "gallery", "cafe", "market", "shopping"];
+  const outdoorTerms = ["walk", "park", "garden", "river", "viewpoint", "street", "rooftop"];
+
+  if (mode === "wet") {
+    if (includesAny(haystack, indoorTerms)) {
+      score += 20;
+      tags.push("Rain-safe");
+    }
+    if (includesAny(haystack, outdoorTerms)) score -= 8;
+  } else if (mode === "cold") {
+    if (includesAny(haystack, ["indoor", "museum", "cafe", "warm"])) {
+      score += 14;
+      tags.push("Cold-friendly");
+    }
+  } else if (mode === "hot") {
+    if (includesAny(haystack, ["indoor", "shade", "waterfront", "sunset", "evening"])) {
+      score += 12;
+      tags.push("Heat-aware");
+    }
+  } else if (mode === "clear") {
+    if (includesAny(haystack, outdoorTerms)) {
+      score += 12;
+      tags.push("Great weather fit");
+    }
+  }
+
+  if (context.timeOfDay === "morning" && includesAny(haystack, ["morning", "breakfast", "sunrise"])) {
+    score += 10;
+    tags.push("Best this morning");
+  }
+  if (context.timeOfDay === "afternoon" && includesAny(haystack, ["afternoon", "daytime", "lunch"])) {
+    score += 10;
+    tags.push("Best this afternoon");
+  }
+  if (context.timeOfDay === "evening" && includesAny(haystack, ["evening", "sunset", "night", "dinner"])) {
+    score += 10;
+    tags.push("Best this evening");
+  }
+  if (context.timeOfDay === "night" && includesAny(haystack, ["night", "late", "bar", "rooftop"])) {
+    score += 10;
+    tags.push("Best tonight");
+  }
+
+  for (const vibe of context.vibes.map((v) => v.toLowerCase())) {
+    if (vibe && includesAny(haystack, [vibe])) {
+      score += 8;
+      tags.push(`${vibe[0].toUpperCase()}${vibe.slice(1)} vibe match`);
+    }
+  }
+
+  if (section === "bookable" && includesAny(haystack, ["tour", "ticket", "experience", "guided", "cruise"])) {
+    score += 8;
+    tags.push("Bookable now");
+  }
+
+  if (!tags.length) tags.push("Weather + timing fit");
+  return {
+    ...activity,
+    rankScore: Math.max(1, Math.min(99, score)),
+    reasonTags: tags.slice(0, 3),
+  };
+}
+
+function rankActivities(
+  section: "free" | "insider" | "bookable",
+  activities: Activity[],
+  context: {
+    description: string;
+    temperature: number;
+    timeOfDay: string;
+    vibes: string[];
+  }
+): Activity[] {
+  return activities
+    .map((activity) => scoreAndTagActivity(section, activity, context))
+    .sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));
+}
+
+function applyVibeBiasToFreeActivities(
+  city: string,
+  timeOfDay: string,
+  vibes: string[],
+  activities: Activity[]
+): Activity[] {
+  const normalizedVibes = vibes.map((v) => v.toLowerCase());
+  const result = [...activities];
+
+  const foodTerms = ["food", "eat", "dining", "market", "street food", "cafe", "hawker"];
+  const photoTerms = [
+    "photo",
+    "instagram",
+    "instagrammable",
+    "viewpoint",
+    "skyline",
+    "sunset",
+    "rooftop",
+    "scenic",
+  ];
+
+  const hasFood = result.some((a) =>
+    includesAny(`${a.title} ${a.description} ${a.whyNow}`, foodTerms)
+  );
+  const hasPhoto = result.some((a) =>
+    includesAny(`${a.title} ${a.description} ${a.whyNow}`, photoTerms)
+  );
+
+  if (normalizedVibes.includes("food") && !hasFood) {
+    const foodCard: Activity = {
+      title: `${city} food street trail`,
+      description: `Sample local bites at a few popular food spots without needing a full booking.`,
+      whyNow: `${timeOfDay} is ideal for trying local food while venues are active.`,
+      duration: "60-120 mins",
+      priceHint: "Low spend",
+      icon: "🍜",
+    };
+    result[result.length - 1] = foodCard;
+  }
+
+  if (
+    (normalizedVibes.includes("instagrammable") || normalizedVibes.includes("instagram")) &&
+    !hasPhoto
+  ) {
+    const photoCard: Activity = {
+      title: `${city} photospot walk`,
+      description: `Hit visually striking streets, skyline angles, and landmark backdrops for great shots.`,
+      whyNow: `${timeOfDay} light and weather make this a strong moment for photo-friendly stops.`,
+      duration: "60-90 mins",
+      priceHint: "Free",
+      icon: "📸",
+    };
+    // Prefer keeping the food card if both vibes were requested.
+    const replaceIndex =
+      normalizedVibes.includes("food") && !hasFood && result.length > 1 ? result.length - 2 : result.length - 1;
+    result[replaceIndex] = photoCard;
+  }
+
+  return result;
+}
+
 function pickTopLocalTip(insiderTips: Activity[], fallbackTip: string): string {
   const firstTip = insiderTips[0]?.description;
   return firstTip || fallbackTip;
@@ -549,6 +721,8 @@ Rules:
 - insiderTips: exactly 2 items.
 - bookableExperiences: exactly 2 items.
 - Focus on what is best RIGHT NOW using weather + time of day.
+- If preferred vibes are provided, strongly prioritize activities matching those vibes.
+- Make each "whyNow" line explicitly reference either the current weather, the time of day, or the preferred vibe (or a combination).
 - Keep all text concise and practical.
 - Do not include markdown or prose outside JSON.
 
@@ -584,6 +758,12 @@ Preferred vibes (optional): ${vibes.length > 0 ? vibes.join(", ") : "No specific
         : [],
       4,
       fallbackData.freeActivities
+    );
+    const vibeAlignedFreeActivities = applyVibeBiasToFreeActivities(
+      city,
+      timeOfDay,
+      vibes,
+      freeActivities
     );
 
     const insiderTips = ensureLength(
@@ -622,22 +802,58 @@ Preferred vibes (optional): ${vibes.length > 0 ? vibes.join(", ") : "No specific
             note: String(item?.note || ""),
           }))
         : fallbackData.outfitItems,
-      freeActivities,
-      insiderTips,
-      bookableExperiences: attachProviderLinks(city, bookableExperiences, gygPartnerId),
+      freeActivities: rankActivities("free", vibeAlignedFreeActivities, {
+        description,
+        temperature,
+        timeOfDay,
+        vibes,
+      }),
+      insiderTips: rankActivities("insider", insiderTips, {
+        description,
+        temperature,
+        timeOfDay,
+        vibes,
+      }),
+      bookableExperiences: attachProviderLinks(
+        city,
+        rankActivities("bookable", bookableExperiences, {
+          description,
+          temperature,
+          timeOfDay,
+          vibes,
+        }),
+        gygPartnerId
+      ),
       localTip: String(parsed.localTip || pickTopLocalTip(insiderTips, fallbackData.localTip)),
     };
 
     const withImages = await enrichAllSectionsWithImages(city, composed);
     return res.status(200).json(withImages);
   } catch {
+    const rankedFallbackFree = rankActivities("free", fallbackData.freeActivities, {
+      description,
+      temperature,
+      timeOfDay,
+      vibes,
+    });
+    const rankedFallbackInsider = rankActivities("insider", fallbackData.insiderTips, {
+      description,
+      temperature,
+      timeOfDay,
+      vibes,
+    });
+    const rankedFallbackBookable = rankActivities("bookable", fallbackData.bookableExperiences, {
+      description,
+      temperature,
+      timeOfDay,
+      vibes,
+    });
+
     const fallbackWithLinks: AiSuccess = {
       ...fallbackData,
-      bookableExperiences: attachProviderLinks(
-        city,
-        fallbackData.bookableExperiences,
-        gygPartnerId
-      ),
+      freeActivities: rankedFallbackFree,
+      insiderTips: rankedFallbackInsider,
+      bookableExperiences: attachProviderLinks(city, rankedFallbackBookable, gygPartnerId),
     };
     const withImages = await enrichAllSectionsWithImages(city, fallbackWithLinks);
     return res.status(200).json(withImages);

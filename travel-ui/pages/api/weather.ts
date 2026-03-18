@@ -8,6 +8,7 @@ type WeatherSuccess = {
   humidity: number;
   iconUrl: string;
   cityHeroImageUrl?: string;
+  fetchedAt: string;
 };
 
 type WeatherError = { error: string };
@@ -110,6 +111,7 @@ export default async function handler(
         weatherData?.weather?.[0]?.icon ?? "01d"
       )}@2x.png`,
       cityHeroImageUrl,
+      fetchedAt: new Date().toISOString(),
     });
   } catch {
     return res.status(502).json({ error: "Could not reach weather service." });

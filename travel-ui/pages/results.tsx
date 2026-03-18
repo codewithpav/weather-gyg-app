@@ -1,6 +1,15 @@
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { ResultsLayout } from "../components/ResultsLayout";
+import { trackEvent } from "../lib/analytics";
+import {
+  loadActivityPreferences,
+  makeActivityPreferenceKey,
+  persistActivityPreferences,
+  upsertActivityPreference,
+  type ActivityPreferenceState,
+  type ActivitySection,
+} from "../lib/userPrefs";
 
 type WeatherPayload = {
   city: string;
@@ -10,6 +19,7 @@ type WeatherPayload = {
   humidity: number;
   iconUrl?: string;
   cityHeroImageUrl?: string;
+  fetchedAt?: string;
 };
 
 type AiPayload = {
@@ -24,6 +34,8 @@ type AiPayload = {
     priceHint?: string;
     icon?: string;
     imageUrl?: string;
+    reasonTags?: string[];
+    rankScore?: number;
     providerLinks?: {
       getYourGuide?: string;
       klook?: string;
@@ -38,6 +50,8 @@ type AiPayload = {
     priceHint?: string;
     icon?: string;
     imageUrl?: string;
+    reasonTags?: string[];
+    rankScore?: number;
     providerLinks?: {
       getYourGuide?: string;
       klook?: string;
@@ -52,6 +66,8 @@ type AiPayload = {
     priceHint?: string;
     icon?: string;
     imageUrl?: string;
+    reasonTags?: string[];
+    rankScore?: number;
     providerLinks?: {
       getYourGuide?: string;
       klook?: string;
@@ -80,11 +96,74 @@ export default function ResultsPage() {
   const [aiLoading, setAiLoading] = useState(true);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [activityPreferences, setActivityPreferences] = useState<
+    Record<string, ActivityPreferenceState>
+  >({});
+  const [hideDismissed, setHideDismissed] = useState(true);
+  const [hideCompleted, setHideCompleted] = useState(false);
+
+  const fetchAiRecommendations = async (
+    weather: WeatherPayload,
+    signal?: AbortSignal
+  ): Promise<AiPayload> => {
+    const aiUrl = new URL("/api/ai-recommendations", window.location.origin);
+    const currentHour = new Date().getHours();
+    const timeOfDay =
+      currentHour < 12
+        ? "morning"
+        : currentHour < 17
+        ? "afternoon"
+        : currentHour < 21
+        ? "evening"
+        : "night";
+    aiUrl.searchParams.set("city", weather.city);
+    aiUrl.searchParams.set("temperature", String(weather.temperature));
+    aiUrl.searchParams.set("feelsLike", String(weather.feelsLike));
+    aiUrl.searchParams.set("description", weather.description);
+    aiUrl.searchParams.set("humidity", String(weather.humidity));
+    aiUrl.searchParams.set("timeOfDay", timeOfDay);
+    if (vibeFilters.length > 0) {
+      aiUrl.searchParams.set("vibes", vibeFilters.join(","));
+    }
+
+    const aiResponse = await fetch(aiUrl.toString(), { signal });
+    let aiPayload: any = null;
+    try {
+      aiPayload = await aiResponse.json();
+    } catch {
+      aiPayload = null;
+    }
+
+    if (!aiResponse.ok || !aiPayload || typeof aiPayload !== "object") {
+      throw new Error(aiPayload?.error || "Could not generate AI recommendations.");
+    }
+    return aiPayload as AiPayload;
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
     setSearchCity(city);
   }, [city, router.isReady]);
+
+  useEffect(() => {
+    setActivityPreferences(loadActivityPreferences());
+    if (typeof window !== "undefined") {
+      const rawHideDismissed = window.localStorage.getItem("gotoday.hideDismissed.v1");
+      const rawHideCompleted = window.localStorage.getItem("gotoday.hideCompleted.v1");
+      if (rawHideDismissed === "false") setHideDismissed(false);
+      if (rawHideCompleted === "true") setHideCompleted(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("gotoday.hideDismissed.v1", String(hideDismissed));
+  }, [hideDismissed]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("gotoday.hideCompleted.v1", String(hideCompleted));
+  }, [hideCompleted]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -125,43 +204,21 @@ export default function ResultsPage() {
         setWeatherLoading(false);
         setPendingCity(null);
 
-        const aiUrl = new URL("/api/ai-recommendations", window.location.origin);
-        const currentHour = new Date().getHours();
-        const timeOfDay =
-          currentHour < 12
-            ? "morning"
-            : currentHour < 17
-            ? "afternoon"
-            : currentHour < 21
-            ? "evening"
-            : "night";
-        aiUrl.searchParams.set("city", weatherPayload.city);
-        aiUrl.searchParams.set("temperature", String(weatherPayload.temperature));
-        aiUrl.searchParams.set("feelsLike", String(weatherPayload.feelsLike));
-        aiUrl.searchParams.set("description", weatherPayload.description);
-        aiUrl.searchParams.set("humidity", String(weatherPayload.humidity));
-        aiUrl.searchParams.set("timeOfDay", timeOfDay);
-        if (vibeFilters.length > 0) {
-          aiUrl.searchParams.set("vibes", vibeFilters.join(","));
-        }
-
-        const aiResponse = await fetch(aiUrl.toString(), { signal: controller.signal });
-        let aiPayload: any = null;
         try {
-          aiPayload = await aiResponse.json();
-        } catch {
-          aiPayload = null;
+          const aiPayload = await fetchAiRecommendations(
+            weatherPayload as WeatherPayload,
+            controller.signal
+          );
+          setAiData(aiPayload);
+          setPendingCity(null);
+        } catch (aiErr: any) {
+          if (aiErr?.name === "AbortError") return;
+          setAiError(aiErr?.message || "Could not generate AI recommendations.");
+        } finally {
+          if (!controller.signal.aborted) {
+            setAiLoading(false);
+          }
         }
-
-        if (!aiResponse.ok || !aiPayload || typeof aiPayload !== "object") {
-          setAiError(aiPayload?.error || "Could not generate AI recommendations.");
-          setAiLoading(false);
-          return;
-        }
-
-        setAiData(aiPayload as AiPayload);
-        setAiLoading(false);
-        setPendingCity(null);
       } catch (err: any) {
         // Ignore request cancellation when city changes or component unmounts.
         if (err?.name === "AbortError") return;
@@ -183,8 +240,48 @@ export default function ResultsPage() {
   const handleSearchSubmit = () => {
     const nextCity = searchCity.trim();
     if (!nextCity) return;
+    trackEvent("search_submitted", {
+      source: "results",
+      city: nextCity,
+      vibes: vibeFilters,
+    });
     setPendingCity(nextCity);
     router.push(`/results?city=${encodeURIComponent(nextCity)}`);
+  };
+
+  const handleRetryAi = async () => {
+    if (!weatherData) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const aiPayload = await fetchAiRecommendations(weatherData);
+      setAiData(aiPayload);
+    } catch (err: any) {
+      setAiError(err?.message || "Could not generate AI recommendations.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleActivityPreferenceChange = (
+    section: ActivitySection,
+    title: string,
+    next: ActivityPreferenceState | null
+  ) => {
+    const key = makeActivityPreferenceKey(displayCity, section, title);
+    setActivityPreferences((prev) => {
+      const updated = upsertActivityPreference(prev, key, next);
+      persistActivityPreferences(updated);
+      return updated;
+    });
+
+    if (next === "saved") {
+      trackEvent("save_click", { city: displayCity, section, title });
+    } else if (next === "dismissed") {
+      trackEvent("dismiss_click", { city: displayCity, section, title });
+    } else if (next === "done") {
+      trackEvent("done_click", { city: displayCity, section, title });
+    }
   };
 
   const displayCity = (
@@ -221,6 +318,7 @@ export default function ResultsPage() {
       humidity={weatherData?.humidity ?? 0}
       iconUrl={weatherData?.iconUrl}
       cityHeroImageUrl={weatherData?.cityHeroImageUrl}
+      weatherUpdatedAt={weatherData?.fetchedAt}
       outfitHeadline={aiData?.outfitHeadline ?? ""}
       outfitExplanation={aiData?.outfitExplanation ?? ""}
       outfitItems={aiData?.outfitItems ?? []}
@@ -235,11 +333,18 @@ export default function ResultsPage() {
       searchCity={searchCity}
       onSearchCityChange={setSearchCity}
       onSearchCitySubmit={handleSearchSubmit}
+      onRetryAi={handleRetryAi}
       onBackToLanding={() => router.push("/")}
       isWeatherLoading={weatherLoading}
       isAiLoading={aiLoading}
       aiError={aiError}
       selectedVibes={vibeFilters}
+      activityPreferences={activityPreferences}
+      onActivityPreferenceChange={handleActivityPreferenceChange}
+      hideDismissed={hideDismissed}
+      hideCompleted={hideCompleted}
+      onHideDismissedChange={setHideDismissed}
+      onHideCompletedChange={setHideCompleted}
     />
   );
 }

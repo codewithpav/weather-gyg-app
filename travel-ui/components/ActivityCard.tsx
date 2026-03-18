@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { trackEvent } from "../lib/analytics";
+import type { ActivityPreferenceState } from "../lib/userPrefs";
 
 interface ActivityCardProps {
   city: string;
   title: string;
   description: string;
   whyNow: string;
+  reasonLabel?: string;
   duration: string;
   priceHint?: string;
   icon?: string;
   providerLabel?: string;
   imageUrl?: string;
+  reasonTags?: string[];
   showBookingCta?: boolean;
   showPriceLevel?: boolean;
   providerLinks?: {
@@ -17,6 +21,14 @@ interface ActivityCardProps {
     klook?: string;
     viator?: string;
   };
+  trackingContext?: {
+    section: "best_now" | "bookable";
+    position: number;
+    selectedVibes?: string[];
+    weatherSummary?: string;
+  };
+  activityState?: ActivityPreferenceState | null;
+  onChangeActivityState?: (next: ActivityPreferenceState | null) => void;
 }
 
 const iconButtonClass =
@@ -55,21 +67,6 @@ function getPriceLevel(priceHint?: string): "$" | "$$" | "$$$" {
   return "$$";
 }
 
-const BookmarkIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M6 4.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V5.5a1 1 0 0 1 1-1z" />
-  </svg>
-);
-
 const PlayIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -107,20 +104,54 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   title,
   description,
   whyNow,
+  reasonLabel = "Why now",
   duration,
   priceHint,
   icon = "✨",
   providerLabel = "Check availability",
   imageUrl,
+  reasonTags = [],
   showBookingCta = false,
   showPriceLevel = true,
   providerLinks,
+  trackingContext,
+  activityState = null,
+  onChangeActivityState,
 }) => {
   const mapQuery = encodeURIComponent(`${title} ${city}`);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
   const youtubeQuery = encodeURIComponent(`${title} ${city} travel guide`);
   const youtubeUrl = `https://www.youtube.com/results?search_query=${youtubeQuery}`;
   const priceLevel = getPriceLevel(priceHint);
+
+  useEffect(() => {
+    trackEvent("card_impression", {
+      city,
+      title,
+      section: trackingContext?.section || "best_now",
+      position: trackingContext?.position ?? 0,
+      vibes: trackingContext?.selectedVibes || [],
+      weatherSummary: trackingContext?.weatherSummary || "",
+    });
+  }, [
+    city,
+    title,
+    trackingContext?.section,
+    trackingContext?.position,
+    trackingContext?.selectedVibes,
+    trackingContext?.weatherSummary,
+  ]);
+
+  const baseTrackingPayload = {
+    city,
+    title,
+    section: trackingContext?.section || "best_now",
+    position: trackingContext?.position ?? 0,
+    vibes: trackingContext?.selectedVibes || [],
+    weatherSummary: trackingContext?.weatherSummary || "",
+  };
+  const actionButtonBase =
+    "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors";
 
   return (
     <article className="flex flex-col rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
@@ -144,42 +175,94 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
           {description}
         </p>
         <p className="mt-2 text-xs text-emerald-700 bg-emerald-50 rounded-full inline-flex px-2 py-0.5">
-          Why now: {whyNow}
+          {reasonLabel}: {whyNow}
         </p>
+        {reasonTags.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {reasonTags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
           <span>{duration}</span>
           {showPriceLevel ? <span title="Estimated budget level">{priceLevel}</span> : <span />}
         </div>
 
-        <div className="mt-3 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            aria-label="Save for later"
-            title="Save for later"
-            className={iconButtonClass}
-          >
-            <BookmarkIcon />
-          </button>
-          <a
-            href={youtubeUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Watch related videos on YouTube"
-            title="Watch related videos on YouTube"
-            className={iconButtonClass}
-          >
-            <PlayIcon />
-          </a>
-          <a
-            href={mapUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Open in maps"
-            title="Open in maps"
-            className={iconButtonClass}
-          >
-            <MapPinIcon />
-          </a>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(activityState === "saved" ? null : "saved")
+              }
+              className={`${actionButtonBase} ${
+                activityState === "saved"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(
+                  activityState === "dismissed" ? null : "dismissed"
+                )
+              }
+              className={`${actionButtonBase} ${
+                activityState === "dismissed"
+                  ? "border-amber-300 bg-amber-50 text-amber-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Dismiss
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onChangeActivityState?.(activityState === "done" ? null : "done")
+              }
+              className={`${actionButtonBase} ${
+                activityState === "done"
+                  ? "border-sky-300 bg-sky-50 text-sky-700"
+                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Done
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Watch related videos on YouTube"
+              title="Watch related videos on YouTube"
+              className={iconButtonClass}
+              onClick={() => trackEvent("youtube_click", baseTrackingPayload)}
+            >
+              <PlayIcon />
+            </a>
+            <a
+              href={mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open in maps"
+              title="Open in maps"
+              className={iconButtonClass}
+              onClick={() => trackEvent("maps_click", baseTrackingPayload)}
+            >
+              <MapPinIcon />
+            </a>
+          </div>
         </div>
         {showBookingCta && (
           <div className="mt-3">
@@ -193,6 +276,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  onClick={() =>
+                    trackEvent("provider_click", {
+                      ...baseTrackingPayload,
+                      provider: "getyourguide",
+                    })
+                  }
                 >
                   GetYourGuide
                 </a>
@@ -203,6 +292,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  onClick={() =>
+                    trackEvent("provider_click", {
+                      ...baseTrackingPayload,
+                      provider: "klook",
+                    })
+                  }
                 >
                   Klook
                 </a>
@@ -213,6 +308,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  onClick={() =>
+                    trackEvent("provider_click", {
+                      ...baseTrackingPayload,
+                      provider: "viator",
+                    })
+                  }
                 >
                   Viator
                 </a>
