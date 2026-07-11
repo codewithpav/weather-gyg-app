@@ -4,6 +4,7 @@ export interface CityOption {
   slug: string;
   name: string;
   country: string;
+  region?: string;
 }
 
 interface SearchBarProps {

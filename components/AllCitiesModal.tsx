@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import type { CityOption } from "./SearchBar";
 
 interface Props {
@@ -9,6 +9,24 @@ interface Props {
 }
 
 export const AllCitiesModal: React.FC<Props> = ({ open, onClose, cities, onSelect }) => {
+  const [query, setQuery] = useState("");
+  const [region, setRegion] = useState<string | null>(null);
+
+  const regions = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of cities) if (c.region) s.add(c.region);
+    return Array.from(s).sort();
+  }, [cities]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return cities.filter((c) => {
+      if (region && c.region !== region) return false;
+      if (!q) return true;
+      return c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q);
+    });
+  }, [cities, query, region]);
+
   if (!open) return null;
   return (
     <div
@@ -26,8 +44,34 @@ export const AllCitiesModal: React.FC<Props> = ({ open, onClose, cities, onSelec
           <button onClick={onClose} className="text-sm text-slate-500">Close</button>
         </div>
 
+        <div className="mb-3 flex items-center gap-3">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search cities"
+            className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => setRegion(null)}
+              className={`rounded-full px-3 py-1 text-sm ${region === null ? 'bg-slate-900 text-white' : 'border'}`}
+            >
+              All
+            </button>
+            {regions.map((r) => (
+              <button
+                key={r}
+                onClick={() => setRegion(r)}
+                className={`rounded-full px-3 py-1 text-sm ${region === r ? 'bg-slate-900 text-white' : 'border'}`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid gap-2 sm:grid-cols-2">
-          {cities.map((c) => (
+          {filtered.map((c) => (
             <button
               key={c.slug}
               type="button"
@@ -35,8 +79,11 @@ export const AllCitiesModal: React.FC<Props> = ({ open, onClose, cities, onSelec
               className="w-full rounded-lg border border-slate-100 px-4 py-3 text-left text-sm hover:bg-slate-50"
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-800">{c.name}</span>
-                <span className="text-xs text-slate-400">{c.country}</span>
+                <div>
+                  <div className="font-medium text-slate-800">{c.name}</div>
+                  <div className="text-xs text-slate-400">{c.country}</div>
+                </div>
+                <div className="text-xs text-slate-500">{c.region ?? ''}</div>
               </div>
             </button>
           ))}
