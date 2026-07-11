@@ -1,0 +1,9 @@
+[
+  { "slug": "paris", "name": "Paris", "country": "France", "lat": 48.8566, "lon": 2.3522, "aliases": ["paris france"] },
+  { "slug": "london", "name": "London", "country": "United Kingdom", "lat": 51.5074, "lon": -0.1278, "aliases": ["london uk", "london england"] },
+  { "slug": "rome", "name": "Rome", "country": "Italy", "lat": 41.9028, "lon": 12.4964, "aliases": ["roma", "rome italy"] },
+  { "slug": "barcelona", "name": "Barcelona", "country": "Spain", "lat": 41.3874, "lon": 2.1686, "aliases": ["barcelona spain", "bcn"] },
+  { "slug": "lisbon", "name": "Lisbon", "country": "Portugal", "lat": 38.7223, "lon": -9.1393, "aliases": ["lisboa", "lisbon portugal"] },
+  { "slug": "tokyo", "name": "Tokyo", "country": "Japan", "lat": 35.6762, "lon": 139.6503, "aliases": ["tokyo japan", "tokio"] },
+  { "slug": "new-york", "name": "New York", "country": "United States", "lat": 40.7128, "lon": -74.006, "aliases": ["nyc", "new york city", "manhattan", "new york usa"] }
+]
