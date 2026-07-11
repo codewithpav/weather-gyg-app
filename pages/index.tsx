@@ -29,13 +29,6 @@ interface LandingProps {
 export const getStaticProps: GetStaticProps<LandingProps> = async () => {
   const { getCityIndex, loadCity } = await import("../lib/content/loader");
   const index = getCityIndex();
-  const cities: CityOption[] = index.map(({ slug, name, country }) => ({
-    slug,
-    name,
-    country,
-    region: regionFor(country),
-  }));
-
   const regionFor = (country: string) => {
     const europe = new Set(["Netherlands","Greece","Spain","Germany","Hungary","Italy","Portugal","United Kingdom","France","Czech Republic","Austria","Türkiye"]);
     const americas = new Set(["United States","Mexico","Brazil"]);
@@ -47,6 +40,13 @@ export const getStaticProps: GetStaticProps<LandingProps> = async () => {
     if (oceania.has(country)) return "Oceania";
     return "Other";
   };
+
+  const cities: CityOption[] = index.map(({ slug, name, country }) => ({
+    slug,
+    name,
+    country,
+    region: regionFor(country),
+  }));
 
   const featuredSlugs = ["paris","london","new-york","tokyo","barcelona","sydney"];
   const featured = featuredSlugs
