@@ -6,6 +6,7 @@ import { SearchBar, type CityOption } from "../components/SearchBar";
 import { VibeChips } from "../components/VibeChips";
 import { trackEvent } from "../lib/analytics";
 import type { Vibe } from "../lib/content/types";
+import AllCitiesModal from "../components/AllCitiesModal";
 
 interface LandingProps {
   cities: CityOption[];
@@ -56,6 +57,7 @@ export default function LandingPage({ cities }: LandingProps) {
   const router = useRouter();
   const [city, setCity] = useState("");
   const [selectedVibes, setSelectedVibes] = useState<Vibe[]>([]);
+  const [allOpen, setAllOpen] = useState(false);
 
   const toggleVibe = (vibe: Vibe) => {
     setSelectedVibes((prev) => {
@@ -87,9 +89,14 @@ export default function LandingPage({ cities }: LandingProps) {
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
         <p className="font-display text-lg font-bold tracking-tight text-slate-900">GoToday</p>
-        <p className="text-xs text-slate-400">
-          {cities.length} cities · no signup · instant
-        </p>
+        <nav className="flex items-center gap-4">
+          <button
+            onClick={() => setAllOpen(true)}
+            className="rounded-full border border-black/[0.06] bg-white px-3 py-1 text-sm text-slate-700 shadow-sm"
+          >
+            Browse all cities
+          </button>
+        </nav>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -115,30 +122,52 @@ export default function LandingPage({ cities }: LandingProps) {
 
         <section className="py-12">
           <div className="mb-5 flex items-baseline justify-between">
-            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">Where today?</h2>
-            <p className="text-xs text-slate-400">
-              Somewhere else? We&apos;ll route you to the nearest covered city.
-            </p>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">Featured cities</h2>
+            <p className="text-xs text-slate-400">Quick picks curated for inspiration</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {cities.map((c) => (
-              <button
-                key={c.slug}
-                type="button"
-                onClick={() => handleSubmit(c.name)}
-                className={`card-elevated group relative h-28 overflow-hidden rounded-2xl bg-gradient-to-br text-left transition-transform duration-200 hover:-translate-y-0.5 ${tileGradient(
-                  c.slug
-                )}`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent transition-colors group-hover:from-black/50" />
-                <div className="absolute inset-x-0 bottom-0 p-3.5">
-                  <p className="text-sm font-semibold text-white">{c.name}</p>
-                  <p className="text-[11px] text-white/70">{c.country}</p>
-                </div>
-              </button>
-            ))}
+
+          <div className="mb-4 flex gap-2">
+            <button className="rounded-full border px-3 py-1 text-sm text-slate-700">Europe</button>
+            <button className="rounded-full border px-3 py-1 text-sm text-slate-700">Americas</button>
+            <button className="rounded-full border px-3 py-1 text-sm text-slate-700">Asia</button>
+            <button className="rounded-full border px-3 py-1 text-sm text-slate-700">Oceania</button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "paris",
+              "london",
+              "new-york",
+              "tokyo",
+              "barcelona",
+              "sydney",
+            ]
+              .map((slug) => cities.find((c) => c.slug === slug))
+              .filter(Boolean)
+              .map((c) => (
+                <button
+                  key={c!.slug}
+                  type="button"
+                  onClick={() => handleSubmit(c!.name)}
+                  className={`group relative overflow-hidden rounded-2xl bg-white shadow-sm transition-transform hover:-translate-y-1`}
+                >
+                  <div className="flex items-center gap-4 p-4">
+                    <div className="h-20 w-28 flex-none overflow-hidden rounded-lg bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/images/cities/${c!.slug}-illust.svg`} alt="" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-slate-900">{c!.name}</p>
+                      <p className="mt-1 text-xs text-slate-500">{c!.country}</p>
+                      <p className="mt-2 text-xs text-slate-400">A short hook about the city to entice a click.</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
           </div>
         </section>
+
+        <AllCitiesModal open={allOpen} onClose={() => setAllOpen(false)} cities={cities} onSelect={(name) => { setAllOpen(false); handleSubmit(name); }} />
 
         <section className="grid gap-10 border-t border-slate-200/70 py-14 sm:grid-cols-3">
           {VALUE_PROPS.map((prop) => (
