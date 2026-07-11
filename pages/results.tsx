@@ -118,7 +118,7 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Head>
         <title>
           {state.status === "ready"
@@ -126,24 +126,20 @@ export default function ResultsPage() {
             : "GoToday — plan your day"}
         </title>
       </Head>
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-sm text-white">
-              ✈️
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">GoToday</p>
-              <p className="text-[11px] text-slate-500">Weather-smart travel planner</p>
-            </div>
+      <header className="sticky top-0 z-30 border-b border-black/[0.04] bg-[#fafafa]/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+          <Link href="/" className="text-lg font-bold tracking-tight text-slate-900">
+            GoToday
           </Link>
           <Link
             href="/"
-            className="rounded-full border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-white sm:text-sm"
+            className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-black/[0.06] transition-colors hover:ring-black/20"
           >
             New search
           </Link>
-        </header>
+        </div>
+      </header>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
 
         {state.status === "loading" && (
           <div>

@@ -11,7 +11,6 @@ interface CityHeroProps {
   condition: string;
   timeOfDay: string;
   localHour: number;
-  iconUrl?: string;
   imageUrl?: string;
   isLoading?: boolean;
 }
@@ -41,13 +40,6 @@ function heroGradient(condition: string, timeOfDay: string): string {
   }
 }
 
-const CONDITION_EMOJI: Record<string, string> = {
-  clear: "☀️",
-  clouds: "☁️",
-  rain: "🌧️",
-  snow: "❄️",
-};
-
 export const CityHero: React.FC<CityHeroProps> = ({
   city,
   country,
@@ -59,25 +51,30 @@ export const CityHero: React.FC<CityHeroProps> = ({
   condition,
   timeOfDay,
   localHour,
-  iconUrl,
   imageUrl,
   isLoading = false,
 }) => {
   if (isLoading) {
-    return <div className="mb-6 h-60 animate-pulse rounded-3xl bg-slate-900/90" />;
+    return <div className="mb-8 h-64 animate-pulse rounded-3xl bg-slate-900/90" />;
   }
 
   const localTime = `${String(localHour).padStart(2, "0")}:00`;
+  const metaParts = [
+    description,
+    `feels like ${Math.round(feelsLike)}°`,
+    `${humidity}% humidity`,
+  ];
+  if (windSpeed > 8) metaParts.push(`windy ${Math.round(windSpeed)} m/s`);
 
   return (
-    <section className="relative mb-6 overflow-hidden rounded-3xl shadow-xl">
+    <section className="card-elevated relative mb-8 overflow-hidden rounded-3xl">
       {imageUrl ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
             alt={`${city} skyline`}
-            className="h-60 w-full object-cover sm:h-72"
+            className="h-64 w-full object-cover sm:h-72"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}
@@ -88,51 +85,23 @@ export const CityHero: React.FC<CityHeroProps> = ({
         </>
       ) : (
         <div
-          className={`h-60 w-full bg-gradient-to-br sm:h-72 ${heroGradient(condition, timeOfDay)}`}
-        >
-          <span className="absolute right-6 top-5 select-none text-7xl opacity-25 sm:text-8xl">
-            {CONDITION_EMOJI[condition] ?? "🌤️"}
-          </span>
-          <div className="absolute -left-10 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute right-16 bottom-0 h-36 w-36 rounded-full bg-white/10 blur-3xl" />
-        </div>
+          className={`h-64 w-full bg-gradient-to-br sm:h-72 ${heroGradient(condition, timeOfDay)}`}
+        />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
-      <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-white/80">
-          Right now in
+      <div className="absolute right-6 top-5 text-right text-white sm:right-8 sm:top-6">
+        <p className="text-5xl font-extralight tracking-tighter sm:text-6xl">
+          {Math.round(temperature)}°
         </p>
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-3">
-          <h1 className="text-3xl font-semibold sm:text-4xl [text-shadow:0_2px_8px_rgba(0,0,0,0.4)]">
-            {city}
-          </h1>
-          <span className="text-sm text-white/70">{country}</span>
-        </div>
-        <p className="mt-1 text-sm capitalize text-white/90">
-          {description} · local time {localTime}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
-            {iconUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={iconUrl} alt={description} className="h-4 w-4" />
-            )}
-            {Math.round(temperature)}°C
-          </span>
-          <span className="rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
-            Feels like {Math.round(feelsLike)}°
-          </span>
-          <span className="rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
-            Humidity {humidity}%
-          </span>
-          {windSpeed > 8 && (
-            <span className="rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
-              Windy {Math.round(windSpeed)} m/s
-            </span>
-          )}
-        </div>
+        <p className="mt-0.5 text-xs font-medium text-white/70">{localTime} local</p>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+        <p className="text-[13px] font-medium text-white/70">{country}</p>
+        <h1 className="mt-0.5 text-4xl font-semibold tracking-tight sm:text-5xl">{city}</h1>
+        <p className="mt-2 text-sm capitalize text-white/85">{metaParts.join(" · ")}</p>
       </div>
     </section>
   );

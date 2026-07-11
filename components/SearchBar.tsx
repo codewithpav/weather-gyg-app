@@ -39,9 +39,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const showDropdown = focused && matches.length > 0 && value.trim().length > 0;
 
   return (
-    <div className="relative w-full max-w-xl mx-auto">
-      <div className="flex items-center gap-2 bg-white/90 backdrop-blur rounded-full shadow-sm px-4 py-2 border border-slate-200 focus-within:border-slate-400 focus-within:shadow-md transition-all">
-        <span className="text-slate-400 text-lg">🔍</span>
+    <div className="relative mx-auto w-full max-w-xl">
+      <div className="card-elevated flex items-center gap-3 rounded-full border border-black/[0.05] bg-white py-2 pl-6 pr-2 transition-shadow focus-within:shadow-lg">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -54,18 +53,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           }}
           onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           placeholder={placeholder}
-          className="flex-1 bg-transparent outline-none text-slate-900 placeholder:text-slate-400 text-sm sm:text-base"
+          className="flex-1 bg-transparent py-2 text-[15px] text-slate-900 outline-none placeholder:text-slate-400"
         />
         <button
           onClick={() => onSubmit()}
-          className="inline-flex items-center justify-center rounded-full bg-slate-900 text-white px-4 py-1.5 text-sm font-medium hover:bg-slate-800 transition-colors"
+          className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
         >
           Plan my day
         </button>
       </div>
 
       {showDropdown && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+        <div className="card-elevated absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-black/[0.05] bg-white">
           {matches.map((c) => (
             <button
               key={c.slug}
@@ -75,7 +74,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 onChange(c.name);
                 onSubmit(c.name);
               }}
-              className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm text-slate-800 hover:bg-slate-50"
+              className="flex w-full items-center justify-between px-5 py-3 text-left text-sm text-slate-800 transition-colors hover:bg-slate-50"
             >
               <span className="font-medium">{c.name}</span>
               <span className="text-xs text-slate-400">{c.country}</span>

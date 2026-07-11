@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
 import Head from "next/head";
-import Image from "next/image";
 import type { GetStaticProps } from "next";
 import { SearchBar, type CityOption } from "../components/SearchBar";
 import { VibeChips } from "../components/VibeChips";
@@ -19,6 +18,39 @@ export const getStaticProps: GetStaticProps<LandingProps> = async () => {
   const cities = getCityIndex().map(({ slug, name, country }) => ({ slug, name, country }));
   return { props: { cities } };
 };
+
+// Deterministic soft gradient per city so the grid feels designed, not random.
+const TILE_GRADIENTS = [
+  "from-sky-500 to-indigo-600",
+  "from-amber-400 to-rose-500",
+  "from-emerald-500 to-teal-700",
+  "from-violet-500 to-indigo-700",
+  "from-rose-400 to-fuchsia-600",
+  "from-cyan-500 to-blue-700",
+  "from-orange-400 to-red-600",
+  "from-slate-600 to-slate-900",
+];
+
+function tileGradient(slug: string): string {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) | 0;
+  return TILE_GRADIENTS[Math.abs(hash) % TILE_GRADIENTS.length];
+}
+
+const VALUE_PROPS = [
+  {
+    title: "Reads the sky",
+    body: "Live weather and local time decide what makes the list — rain moves you under cover, sunshine sends you out.",
+  },
+  {
+    title: "Knows the city",
+    body: "Real places with the local angle — not a generic top-10. Free finds, insider spots, and experiences worth paying for.",
+  },
+  {
+    title: "Instant, always",
+    body: "No signup, no loading spinner theatre. Search, get your day, go.",
+  },
+];
 
 export default function LandingPage({ cities }: LandingProps) {
   const router = useRouter();
@@ -44,7 +76,7 @@ export default function LandingPage({ cities }: LandingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Head>
         <title>GoToday — weather-smart day plans for any city</title>
         <meta
@@ -52,168 +84,80 @@ export default function LandingPage({ cities }: LandingProps) {
           content="Search a city and instantly get a day plan matched to the live weather: what to do, what to wear, and what's worth booking."
         />
       </Head>
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <header className="mb-8 flex items-center justify-between rounded-3xl border border-slate-200 bg-white/85 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-sm text-white">
-              ✈️
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">GoToday</p>
-              <p className="text-[11px] text-slate-500">Weather-smart travel planner</p>
-            </div>
-          </div>
-          <p className="hidden text-xs text-slate-400 sm:block">
-            {cities.length} cities covered · no signup · instant
-          </p>
-        </header>
 
-        <section className="mx-auto max-w-2xl rounded-3xl border border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50/60 to-white px-6 py-8 text-center shadow-sm sm:px-10 sm:py-10">
-          <span className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-white/90 px-3 py-1 text-xs text-slate-500 shadow-sm">
-            Live weather in · smart plans out
-          </span>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            Plan your day perfectly
-            <br className="hidden sm:block" /> in any city
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <p className="text-lg font-bold tracking-tight text-slate-900">GoToday</p>
+        <p className="text-xs text-slate-400">
+          {cities.length} cities · no signup · instant
+        </p>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-2xl pb-10 pt-14 text-center sm:pt-20">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+            Plan your day perfectly,
+            <br />
+            in any city
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm text-slate-600 sm:text-base">
-            Search a city and get an instant plan matched to right-now weather and
-            time of day — what to do, what to wear, and what&apos;s worth booking.
+          <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-slate-500">
+            Live weather in, a smart day out — what to do, what to wear, and
+            what&apos;s worth booking.
           </p>
-        </section>
 
-        <div className="mt-8">
-          <SearchBar
-            value={city}
-            onChange={setCity}
-            onSubmit={handleSubmit}
-            cities={cities}
-          />
-          <div className="mx-auto mt-3 flex max-w-xl flex-wrap items-center justify-center gap-2 text-xs text-slate-500 sm:text-sm">
-            <span className="text-slate-400">Try:</span>
-            {cities.slice(0, 5).map((c) => (
-              <button
-                key={c.slug}
-                type="button"
-                onClick={() => handleSubmit(c.name)}
-                className="rounded-full border border-slate-200 bg-white/60 px-3 py-1 transition-colors hover:border-slate-400 hover:bg-white"
-              >
-                {c.name}
-              </button>
-            ))}
+          <div className="mt-9">
+            <SearchBar value={city} onChange={setCity} onSubmit={handleSubmit} cities={cities} />
           </div>
-        </div>
 
-        <section className="mx-auto mt-6 max-w-xl">
-          <p className="mb-2 text-center text-xs uppercase tracking-[0.18em] text-slate-400">
-            Optional vibe filters
-          </p>
-          <VibeChips selected={selectedVibes} onToggle={toggleVibe} />
-        </section>
-
-        <section className="mt-12 grid gap-6 text-left sm:grid-cols-3">
-          <div className="rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur">
-            <div className="relative mb-4 h-36 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-              <Image
-                src="/images/weather-aware-planning.png"
-                alt="Weather-aware planning illustration"
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 33vw"
-              />
-            </div>
-            <p className="text-sm font-medium text-slate-900">Weather-aware planning</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Rain sends you somewhere covered, sunshine sends you outside — picks
-              adapt to live conditions and local time of day.
-            </p>
-          </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur">
-            <div className="relative mb-4 h-36 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-              <Image
-                src="/images/what-to-wear.png"
-                alt="What to wear illustration"
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 33vw"
-              />
-            </div>
-            <p className="text-sm font-medium text-slate-900">What to wear</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Clear clothing guidance so you&apos;re never too cold, too hot, or caught
-              in the rain unprepared.
-            </p>
-          </div>
-          <div className="rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur">
-            <div className="relative mb-4 h-36 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-              <Image
-                src="/images/book-in-couple-of-taps.png"
-                alt="Book in a couple of taps illustration"
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 33vw"
-              />
-            </div>
-            <p className="text-sm font-medium text-slate-900">Book in a couple taps</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Browse bookable experiences from partners like GetYourGuide directly
-              from your results.
-            </p>
+          <div className="mt-6">
+            <VibeChips selected={selectedVibes} onToggle={toggleVibe} size="sm" />
           </div>
         </section>
 
-        <section className="mt-12 rounded-3xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-900">Covered cities</h2>
+        <section className="py-12">
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">Where today?</h2>
             <p className="text-xs text-slate-400">
-              Searching somewhere else? We&apos;ll route you to the nearest covered city.
+              Somewhere else? We&apos;ll route you to the nearest covered city.
             </p>
           </div>
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {cities.map((c) => (
               <button
                 key={c.slug}
                 type="button"
                 onClick={() => handleSubmit(c.name)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 transition-colors hover:border-slate-400 hover:bg-white"
+                className={`card-elevated group relative h-28 overflow-hidden rounded-2xl bg-gradient-to-br text-left transition-transform duration-200 hover:-translate-y-0.5 ${tileGradient(
+                  c.slug
+                )}`}
               >
-                {c.name}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent transition-colors group-hover:from-black/50" />
+                <div className="absolute inset-x-0 bottom-0 p-3.5">
+                  <p className="text-sm font-semibold text-white">{c.name}</p>
+                  <p className="text-[11px] text-white/70">{c.country}</p>
+                </div>
               </button>
             ))}
           </div>
         </section>
 
-        <footer className="mt-14 rounded-3xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
-          <div className="grid gap-6 sm:grid-cols-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-900">GoToday</p>
-              <p className="mt-2 text-xs text-slate-500">
-                Open the app and instantly know what to do based on weather, time of
-                day, and local context.
-              </p>
+        <section className="grid gap-10 border-t border-slate-200/70 py-14 sm:grid-cols-3">
+          {VALUE_PROPS.map((prop) => (
+            <div key={prop.title}>
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+                {prop.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">{prop.body}</p>
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Product</p>
-              <div className="mt-2 space-y-1 text-sm text-slate-600">
-                <p>Features</p>
-                <p>City guides</p>
-                <p>Affiliate partners</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Company</p>
-              <div className="mt-2 space-y-1 text-sm text-slate-600">
-                <p>About</p>
-                <p>Contact</p>
-                <p>Privacy</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 border-t border-slate-200 pt-3 text-xs text-slate-500">
-            © {new Date().getFullYear()} GoToday. Built for better day-of travel decisions.
-          </div>
-        </footer>
-      </div>
+          ))}
+        </section>
+      </main>
+
+      <footer className="border-t border-slate-200/70">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs text-slate-400 sm:px-6 lg:px-8">
+          <p>© {new Date().getFullYear()} GoToday</p>
+          <p>Built for better day-of travel decisions</p>
+        </div>
+      </footer>
     </div>
   );
 }
