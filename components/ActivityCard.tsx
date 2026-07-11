@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { trackEvent } from "../lib/analytics";
+import Image from "next/image";
 import type { ActivityPreferenceState } from "../lib/userPrefs";
 import type { TodayActivity } from "../pages/api/today";
 
@@ -21,6 +22,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onSetPreference,
 }) => {
   const impressionSent = useRef(false);
+  const [imgError, setImgError] = useState(false);
   useEffect(() => {
     if (impressionSent.current) return;
     impressionSent.current = true;
@@ -77,10 +79,23 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         {preference === "saved" ? "♥" : "♡"}
       </button>
 
-      <h3 className="pr-8 text-[15px] font-semibold tracking-tight text-slate-900">
+      <h3 className="pr-8 font-display text-[15px] font-semibold tracking-tight text-slate-900">
         <span className="mr-1.5">{activity.icon}</span>
         {activity.title}
       </h3>
+      {/* City illustration or activity image */}
+      {(activity.imageUrl || !imgError) && (
+        <div className="mt-3 mb-1.5 h-28 w-full overflow-hidden rounded-lg">
+          <Image
+            src={activity.imageUrl || `/images/cities/${citySlug}-illust.png`}
+            alt={activity.title}
+            width={600}
+            height={168}
+            className="h-full w-full object-cover"
+            onError={() => setImgError(true)}
+          />
+        </div>
+      )}
       {meta.length > 0 && (
         <p className="mt-1 text-xs text-slate-400">{meta.join(" · ")}</p>
       )}
@@ -104,7 +119,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               onClick={() =>
                 trackEvent("provider_click", { ...trackingPayload, provider: "getyourguide" })
               }
-              className="rounded-full bg-slate-900 px-4 py-1.5 font-medium text-white transition-colors hover:bg-slate-700"
+              className="rounded-full bg-brand-600 px-4 py-1.5 font-medium text-white shadow-sm shadow-brand-600/25 transition-colors hover:bg-brand-700"
             >
               Book experience
             </a>

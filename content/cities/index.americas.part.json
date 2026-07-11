@@ -1,0 +1,10 @@
+[
+  { "slug": "los-angeles", "name": "Los Angeles", "country": "United States", "lat": 34.0522, "lon": -118.2437, "aliases": ["la", "los angeles usa"] },
+  { "slug": "san-francisco", "name": "San Francisco", "country": "United States", "lat": 37.7749, "lon": -122.4194, "aliases": ["sf", "san fran"] },
+  { "slug": "chicago", "name": "Chicago", "country": "United States", "lat": 41.8781, "lon": -87.6298, "aliases": ["chi-town", "chicago usa"] },
+  { "slug": "miami", "name": "Miami", "country": "United States", "lat": 25.7617, "lon": -80.1918, "aliases": ["miami beach", "305"] },
+  { "slug": "mexico-city", "name": "Mexico City", "country": "Mexico", "lat": 19.4326, "lon": -99.1332, "aliases": ["cdmx", "ciudad de mexico"] },
+  { "slug": "rio-de-janeiro", "name": "Rio de Janeiro", "country": "Brazil", "lat": -22.9068, "lon": -43.1729, "aliases": ["rio", "rio de janeiro brazil"] },
+  { "slug": "venice", "name": "Venice", "country": "Italy", "lat": 45.4408, "lon": 12.3155, "aliases": ["venezia", "venice italy"] },
+  { "slug": "florence", "name": "Florence", "country": "Italy", "lat": 43.7696, "lon": 11.2558, "aliases": ["firenze", "florence italy"] }
+]

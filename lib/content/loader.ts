@@ -11,9 +11,31 @@ const cityCache = new Map<string, CityContent>();
 
 export function getCityIndex(): CityIndexEntry[] {
   if (!indexCache) {
-    const raw = fs.readFileSync(path.join(CONTENT_DIR, "index.json"), "utf8");
-    indexCache = JSON.parse(raw) as CityIndexEntry[];
+    const files = fs
+      .readdirSync(CONTENT_DIR)
+      .filter((f) => /^index(\..+)?\.json$/.test(f));
+
+    const entries: CityIndexEntry[] = [];
+    const seen = new Set<string>();
+
+    for (const file of files) {
+      try {
+        const raw = fs.readFileSync(path.join(CONTENT_DIR, file), "utf8");
+        const arr = JSON.parse(raw) as CityIndexEntry[];
+        for (const e of arr) {
+          if (!seen.has(e.slug)) {
+            entries.push(e);
+            seen.add(e.slug);
+          }
+        }
+      } catch (err) {
+        // ignore malformed index parts
+      }
+    }
+
+    indexCache = entries;
   }
+
   return indexCache;
 }
 

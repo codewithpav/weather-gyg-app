@@ -71,6 +71,8 @@ export interface CityContent {
   lat: number;
   lon: number;
   heroImageUrl?: string;
+  /** Optional illustration used for thumbnails/cards. Prefer a small, stylized image. */
+  illustrationUrl?: string;
   /** 3-5 evergreen local tips. */
   localTips: string[];
   activities: CityActivity[];

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="168" viewBox="0 0 600 168">
+  <rect width="100%" height="100%" rx="12" fill="hsl(308 65% 55%)"/>
+  <g fill="white" opacity="0.95">
+    <text x="20" y="96" font-family="Inter, system-ui, Arial" font-size="28" font-weight="600">Sydney</text>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+[
+  { "slug": "amsterdam", "name": "Amsterdam", "country": "Netherlands", "lat": 52.3676, "lon": 4.9041, "aliases": ["amsterdam netherlands", "ams"] },
+  { "slug": "berlin", "name": "Berlin", "country": "Germany", "lat": 52.52, "lon": 13.405, "aliases": ["berlin germany"] },
+  { "slug": "prague", "name": "Prague", "country": "Czech Republic", "lat": 50.0755, "lon": 14.4378, "aliases": ["praha", "prague czech republic"] },
+  { "slug": "vienna", "name": "Vienna", "country": "Austria", "lat": 48.2082, "lon": 16.3738, "aliases": ["wien", "vienna austria"] },
+  { "slug": "madrid", "name": "Madrid", "country": "Spain", "lat": 40.4168, "lon": -3.7038, "aliases": ["madrid spain"] },
+  { "slug": "budapest", "name": "Budapest", "country": "Hungary", "lat": 47.4979, "lon": 19.0402, "aliases": ["budapest hungary"] },
+  { "slug": "athens", "name": "Athens", "country": "Greece", "lat": 37.9838, "lon": 23.7275, "aliases": ["athina", "athens greece"] },
+  { "slug": "istanbul", "name": "Istanbul", "country": "Türkiye", "lat": 41.0082, "lon": 28.9784, "aliases": ["istanbul turkey", "constantinople"] }
+]

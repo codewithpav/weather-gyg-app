@@ -50,6 +50,7 @@ const citySchema = z.object({
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
   heroImageUrl: z.string().url().optional(),
+  illustrationUrl: z.string().url().optional(),
   localTips: z.array(z.string().min(10)).min(3).max(6),
   activities: z.array(activitySchema).min(28),
 });
@@ -125,16 +126,32 @@ function checkCity(fileName: string, raw: unknown): string[] {
 }
 
 function main() {
-  const indexPath = path.join(CONTENT_DIR, "index.json");
-  if (!fs.existsSync(indexPath)) {
+  // Merge any index.json and index.*.part.json files to form the complete index
+  const indexFiles = fs
+    .readdirSync(CONTENT_DIR)
+    .filter((f) => /^index(\..+)?\.json$/.test(f));
+
+  if (indexFiles.length === 0) {
     console.error("content/cities/index.json not found");
     process.exit(1);
   }
-  const index = indexSchema.parse(JSON.parse(fs.readFileSync(indexPath, "utf8")));
 
-  const files = fs
-    .readdirSync(CONTENT_DIR)
-    .filter((f) => f.endsWith(".json") && f !== "index.json");
+  const mergedIndexEntries: any[] = [];
+  const seenIndex = new Set<string>();
+  for (const idxFile of indexFiles) {
+    const raw = JSON.parse(fs.readFileSync(path.join(CONTENT_DIR, idxFile), "utf8"));
+    if (!Array.isArray(raw)) continue;
+    for (const e of raw) {
+      if (!seenIndex.has(e.slug)) {
+        mergedIndexEntries.push(e);
+        seenIndex.add(e.slug);
+      }
+    }
+  }
+
+  const index = indexSchema.parse(mergedIndexEntries);
+
+  const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith(".json") && !/^index(\..+)?\.json$/.test(f));
 
   const allErrors: string[] = [];
   const indexSlugs = new Set(index.map((e) => e.slug));
@@ -150,6 +167,35 @@ function main() {
   for (const file of files) {
     const raw = JSON.parse(fs.readFileSync(path.join(CONTENT_DIR, file), "utf8"));
     allErrors.push(...checkCity(file, raw));
+    // Additional image existence checks: either a remote URL is provided
+    // via heroImageUrl/illustrationUrl, or a local fallback file must exist
+    // under public/images/cities/.
+    try {
+      const parsed = citySchema.parse(raw) as CityContent;
+      const publicDir = path.join(process.cwd(), "public", "images", "cities");
+      const exts = ["jpg", "jpeg", "png", "webp", "avif", "svg"];
+
+      const heroLocalExists = exts.some((ext) =>
+        fs.existsSync(path.join(publicDir, `${parsed.slug}-hero.${ext}`))
+      );
+      if (!parsed.heroImageUrl && !heroLocalExists) {
+        allErrors.push(
+          `${file}: missing hero image — provide heroImageUrl or add public/images/cities/${parsed.slug}-hero.jpg`
+        );
+      }
+
+      const illustLocalExists = exts.some((ext) =>
+        fs.existsSync(path.join(publicDir, `${parsed.slug}-illust.${ext}`)) ||
+        fs.existsSync(path.join(publicDir, `${parsed.slug}-illustration.${ext}`))
+      );
+      if (!parsed.illustrationUrl && !illustLocalExists) {
+        allErrors.push(
+          `${file}: missing illustration — provide illustrationUrl or add public/images/cities/${parsed.slug}-illust.png`
+        );
+      }
+    } catch (e) {
+      // ignore — parsing errors already reported above
+    }
   }
 
   if (allErrors.length > 0) {

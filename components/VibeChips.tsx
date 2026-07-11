@@ -15,12 +15,19 @@ interface VibeChipsProps {
   selected: Vibe[];
   onToggle: (vibe: Vibe) => void;
   size?: "sm" | "md";
+  align?: "center" | "start";
 }
 
-export const VibeChips: React.FC<VibeChipsProps> = ({ selected, onToggle, size = "md" }) => {
+export const VibeChips: React.FC<VibeChipsProps> = ({
+  selected,
+  onToggle,
+  size = "md",
+  align = "center",
+}) => {
   const pad = size === "sm" ? "px-3.5 py-1.5 text-xs" : "px-4 py-2 text-sm";
+  const justify = align === "start" ? "justify-start" : "justify-center";
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2">
+    <div className={`flex flex-wrap items-center gap-2 ${justify}`}>
       {VIBES.map((vibe) => {
         const active = selected.includes(vibe);
         return (
@@ -30,8 +37,8 @@ export const VibeChips: React.FC<VibeChipsProps> = ({ selected, onToggle, size =
             onClick={() => onToggle(vibe)}
             className={`rounded-full font-medium transition-all ${pad} ${
               active
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-white text-slate-600 shadow-sm ring-1 ring-black/[0.06] hover:ring-black/20"
+                ? "bg-brand-600 text-white shadow-sm shadow-brand-600/20"
+                : "bg-white text-slate-600 shadow-sm ring-1 ring-black/[0.06] hover:ring-brand-300 hover:text-slate-900"
             }`}
           >
             {VIBE_LABELS[vibe]}

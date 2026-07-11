@@ -1,9 +1,318 @@
 [
-  { "slug": "paris", "name": "Paris", "country": "France", "lat": 48.8566, "lon": 2.3522, "aliases": ["paris france"] },
-  { "slug": "london", "name": "London", "country": "United Kingdom", "lat": 51.5074, "lon": -0.1278, "aliases": ["london uk", "london england"] },
-  { "slug": "rome", "name": "Rome", "country": "Italy", "lat": 41.9028, "lon": 12.4964, "aliases": ["roma", "rome italy"] },
-  { "slug": "barcelona", "name": "Barcelona", "country": "Spain", "lat": 41.3874, "lon": 2.1686, "aliases": ["barcelona spain", "bcn"] },
-  { "slug": "lisbon", "name": "Lisbon", "country": "Portugal", "lat": 38.7223, "lon": -9.1393, "aliases": ["lisboa", "lisbon portugal"] },
-  { "slug": "tokyo", "name": "Tokyo", "country": "Japan", "lat": 35.6762, "lon": 139.6503, "aliases": ["tokyo japan", "tokio"] },
-  { "slug": "new-york", "name": "New York", "country": "United States", "lat": 40.7128, "lon": -74.006, "aliases": ["nyc", "new york city", "manhattan", "new york usa"] }
+  {
+    "slug": "amsterdam",
+    "name": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.3676,
+    "lon": 4.9041,
+    "aliases": [
+      "amsterdam"
+    ]
+  },
+  {
+    "slug": "athens",
+    "name": "Athens",
+    "country": "Greece",
+    "lat": 37.9838,
+    "lon": 23.7275,
+    "aliases": [
+      "athens"
+    ]
+  },
+  {
+    "slug": "bangkok",
+    "name": "Bangkok",
+    "country": "Thailand",
+    "lat": 13.7563,
+    "lon": 100.5018,
+    "aliases": [
+      "bangkok"
+    ]
+  },
+  {
+    "slug": "barcelona",
+    "name": "Barcelona",
+    "country": "Spain",
+    "lat": 41.3874,
+    "lon": 2.1686,
+    "aliases": [
+      "barcelona"
+    ]
+  },
+  {
+    "slug": "berlin",
+    "name": "Berlin",
+    "country": "Germany",
+    "lat": 52.52,
+    "lon": 13.405,
+    "aliases": [
+      "berlin"
+    ]
+  },
+  {
+    "slug": "budapest",
+    "name": "Budapest",
+    "country": "Hungary",
+    "lat": 47.4979,
+    "lon": 19.0402,
+    "aliases": [
+      "budapest"
+    ]
+  },
+  {
+    "slug": "chicago",
+    "name": "Chicago",
+    "country": "United States",
+    "lat": 41.8781,
+    "lon": -87.6298,
+    "aliases": [
+      "chicago"
+    ]
+  },
+  {
+    "slug": "dubai",
+    "name": "Dubai",
+    "country": "United Arab Emirates",
+    "lat": 25.2048,
+    "lon": 55.2708,
+    "aliases": [
+      "dubai"
+    ]
+  },
+  {
+    "slug": "florence",
+    "name": "Florence",
+    "country": "Italy",
+    "lat": 43.7696,
+    "lon": 11.2558,
+    "aliases": [
+      "florence"
+    ]
+  },
+  {
+    "slug": "hong-kong",
+    "name": "Hong Kong",
+    "country": "China",
+    "lat": 22.3193,
+    "lon": 114.1694,
+    "aliases": [
+      "hong-kong",
+      "hong kong"
+    ]
+  },
+  {
+    "slug": "istanbul",
+    "name": "Istanbul",
+    "country": "Türkiye",
+    "lat": 41.0082,
+    "lon": 28.9784,
+    "aliases": [
+      "istanbul"
+    ]
+  },
+  {
+    "slug": "kyoto",
+    "name": "Kyoto",
+    "country": "Japan",
+    "lat": 35.0116,
+    "lon": 135.7681,
+    "aliases": [
+      "kyoto"
+    ]
+  },
+  {
+    "slug": "lisbon",
+    "name": "Lisbon",
+    "country": "Portugal",
+    "lat": 38.7223,
+    "lon": -9.1393,
+    "aliases": [
+      "lisbon"
+    ]
+  },
+  {
+    "slug": "london",
+    "name": "London",
+    "country": "United Kingdom",
+    "lat": 51.5074,
+    "lon": -0.1278,
+    "aliases": [
+      "london"
+    ]
+  },
+  {
+    "slug": "los-angeles",
+    "name": "Los Angeles",
+    "country": "United States",
+    "lat": 34.0522,
+    "lon": -118.2437,
+    "aliases": [
+      "los-angeles",
+      "los angeles"
+    ]
+  },
+  {
+    "slug": "madrid",
+    "name": "Madrid",
+    "country": "Spain",
+    "lat": 40.4168,
+    "lon": -3.7038,
+    "aliases": [
+      "madrid"
+    ]
+  },
+  {
+    "slug": "marrakech",
+    "name": "Marrakech",
+    "country": "Morocco",
+    "lat": 31.6295,
+    "lon": -7.9811,
+    "aliases": [
+      "marrakech"
+    ]
+  },
+  {
+    "slug": "mexico-city",
+    "name": "Mexico City",
+    "country": "Mexico",
+    "lat": 19.4326,
+    "lon": -99.1332,
+    "aliases": [
+      "mexico-city",
+      "mexico city"
+    ]
+  },
+  {
+    "slug": "miami",
+    "name": "Miami",
+    "country": "United States",
+    "lat": 25.7617,
+    "lon": -80.1918,
+    "aliases": [
+      "miami"
+    ]
+  },
+  {
+    "slug": "new-york",
+    "name": "New York",
+    "country": "United States",
+    "lat": 40.7128,
+    "lon": -74.006,
+    "aliases": [
+      "new-york",
+      "new york"
+    ]
+  },
+  {
+    "slug": "paris",
+    "name": "Paris",
+    "country": "France",
+    "lat": 48.8566,
+    "lon": 2.3522,
+    "aliases": [
+      "paris"
+    ]
+  },
+  {
+    "slug": "prague",
+    "name": "Prague",
+    "country": "Czech Republic",
+    "lat": 50.0755,
+    "lon": 14.4378,
+    "aliases": [
+      "prague"
+    ]
+  },
+  {
+    "slug": "rio-de-janeiro",
+    "name": "Rio de Janeiro",
+    "country": "Brazil",
+    "lat": -22.9068,
+    "lon": -43.1729,
+    "aliases": [
+      "rio-de-janeiro",
+      "rio de janeiro"
+    ]
+  },
+  {
+    "slug": "rome",
+    "name": "Rome",
+    "country": "Italy",
+    "lat": 41.9028,
+    "lon": 12.4964,
+    "aliases": [
+      "rome"
+    ]
+  },
+  {
+    "slug": "san-francisco",
+    "name": "San Francisco",
+    "country": "United States",
+    "lat": 37.7749,
+    "lon": -122.4194,
+    "aliases": [
+      "san-francisco",
+      "san francisco"
+    ]
+  },
+  {
+    "slug": "seoul",
+    "name": "Seoul",
+    "country": "South Korea",
+    "lat": 37.5665,
+    "lon": 126.978,
+    "aliases": [
+      "seoul"
+    ]
+  },
+  {
+    "slug": "singapore",
+    "name": "Singapore",
+    "country": "Singapore",
+    "lat": 1.3521,
+    "lon": 103.8198,
+    "aliases": [
+      "singapore"
+    ]
+  },
+  {
+    "slug": "sydney",
+    "name": "Sydney",
+    "country": "Australia",
+    "lat": -33.8688,
+    "lon": 151.2093,
+    "aliases": [
+      "sydney"
+    ]
+  },
+  {
+    "slug": "tokyo",
+    "name": "Tokyo",
+    "country": "Japan",
+    "lat": 35.6762,
+    "lon": 139.6503,
+    "aliases": [
+      "tokyo"
+    ]
+  },
+  {
+    "slug": "venice",
+    "name": "Venice",
+    "country": "Italy",
+    "lat": 45.4408,
+    "lon": 12.3155,
+    "aliases": [
+      "venice"
+    ]
+  },
+  {
+    "slug": "vienna",
+    "name": "Vienna",
+    "country": "Austria",
+    "lat": 48.2082,
+    "lon": 16.3738,
+    "aliases": [
+      "vienna"
+    ]
+  }
 ]

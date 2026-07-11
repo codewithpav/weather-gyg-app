@@ -40,7 +40,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className="relative mx-auto w-full max-w-xl">
-      <div className="card-elevated flex items-center gap-3 rounded-full border border-black/[0.05] bg-white py-2 pl-6 pr-2 transition-shadow focus-within:shadow-lg">
+      <div className="card-elevated flex items-center gap-3 rounded-full border border-black/[0.05] bg-white py-2 pl-6 pr-2 transition-shadow focus-within:shadow-lg focus-within:ring-2 focus-within:ring-brand-500/30">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -57,7 +57,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         />
         <button
           onClick={() => onSubmit()}
-          className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+          className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm shadow-brand-600/25 transition-colors hover:bg-brand-700"
         >
           Plan my day
         </button>

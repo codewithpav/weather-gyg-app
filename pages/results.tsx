@@ -128,7 +128,7 @@ export default function ResultsPage() {
       </Head>
       <header className="sticky top-0 z-30 border-b border-black/[0.04] bg-[#fafafa]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          <Link href="/" className="text-lg font-bold tracking-tight text-slate-900">
+          <Link href="/" className="font-display text-lg font-bold tracking-tight text-slate-900">
             GoToday
           </Link>
           <Link
@@ -143,7 +143,7 @@ export default function ResultsPage() {
 
         {state.status === "loading" && (
           <div>
-            <div className="mb-6 h-60 animate-pulse rounded-3xl bg-slate-900/90 sm:h-72" />
+            <div className="mb-8 h-72 animate-pulse rounded-3xl bg-slate-200 sm:h-80" />
             <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
               <div className="space-y-4">
                 {[0, 1, 2, 3].map((i) => (
@@ -177,7 +177,7 @@ export default function ResultsPage() {
             )}
             <Link
               href="/"
-              className="mt-6 inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
+              className="mt-6 inline-flex rounded-full bg-brand-600 px-4 py-2 text-sm text-white transition-colors hover:bg-brand-700"
             >
               Back to search
             </Link>

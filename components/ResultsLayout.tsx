@@ -80,11 +80,17 @@ export const ResultsLayout: React.FC<ResultsLayoutProps> = ({
         condition={data.weather.condition}
         timeOfDay={data.weather.timeOfDay}
         localHour={data.weather.localHour}
+        fetchedAt={data.weather.fetchedAt}
         imageUrl={data.heroImageUrl}
+        citySlug={data.city.slug}
       />
 
-      <div className="mb-10 flex justify-center">
-        <VibeChips selected={selectedVibes} onToggle={onToggleVibe} size="sm" />
+      <div className="mb-10 flex flex-col gap-3 border-b border-slate-200/70 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-medium text-slate-500">
+          Tune your day
+          <span className="ml-1.5 font-normal text-slate-400">— filter by what you&apos;re in the mood for</span>
+        </p>
+        <VibeChips selected={selectedVibes} onToggle={onToggleVibe} size="sm" align="start" />
       </div>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-8">
@@ -97,22 +103,27 @@ export const ResultsLayout: React.FC<ResultsLayoutProps> = ({
             return (
               <section key={section.key}>
                 <div className="mb-4">
-                  <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                  <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
                     {section.title}
                   </h2>
                   <p className="mt-0.5 text-sm text-slate-400">{section.subtitle}</p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {visible.map((activity) => (
-                    <ActivityCard
+                  {visible.map((activity, i) => (
+                    <div
                       key={activity.id}
-                      activity={activity}
-                      citySlug={data.city.slug}
-                      cityName={data.city.name}
-                      section={section.key}
-                      preference={getPreference(activity.id)}
-                      onSetPreference={onSetPreference}
-                    />
+                      className="animate-rise-in"
+                      style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
+                    >
+                      <ActivityCard
+                        activity={activity}
+                        citySlug={data.city.slug}
+                        cityName={data.city.name}
+                        section={section.key}
+                        preference={getPreference(activity.id)}
+                        onSetPreference={onSetPreference}
+                      />
+                    </div>
                   ))}
                 </div>
               </section>

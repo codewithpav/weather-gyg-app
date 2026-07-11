@@ -86,7 +86,7 @@ export default function LandingPage({ cities }: LandingProps) {
       </Head>
 
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-        <p className="text-lg font-bold tracking-tight text-slate-900">GoToday</p>
+        <p className="font-display text-lg font-bold tracking-tight text-slate-900">GoToday</p>
         <p className="text-xs text-slate-400">
           {cities.length} cities · no signup · instant
         </p>
@@ -94,7 +94,7 @@ export default function LandingPage({ cities }: LandingProps) {
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <section className="mx-auto max-w-2xl pb-10 pt-14 text-center sm:pt-20">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
             Plan your day perfectly,
             <br />
             in any city
@@ -115,7 +115,7 @@ export default function LandingPage({ cities }: LandingProps) {
 
         <section className="py-12">
           <div className="mb-5 flex items-baseline justify-between">
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">Where today?</h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">Where today?</h2>
             <p className="text-xs text-slate-400">
               Somewhere else? We&apos;ll route you to the nearest covered city.
             </p>
