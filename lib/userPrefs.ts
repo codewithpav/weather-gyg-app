@@ -1,20 +1,13 @@
 export type ActivityPreferenceState = "saved" | "dismissed" | "done";
-export type ActivitySection = "best_now" | "bookable";
 
-const ACTIVITY_PREFS_KEY = "gotoday.activity-preferences.v1";
+// v2: keys are `${citySlug}::${activityId}` — stable ids from the content
+// dataset. v1 title-based keys are simply orphaned.
+const ACTIVITY_PREFS_KEY = "gotoday.activity-preferences.v2";
 
 type ActivityPreferencesMap = Record<string, ActivityPreferenceState>;
 
-function normalizeForKey(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-export function makeActivityPreferenceKey(
-  city: string,
-  section: ActivitySection,
-  title: string
-): string {
-  return `${normalizeForKey(city)}::${section}::${normalizeForKey(title)}`;
+export function makeActivityPreferenceKey(citySlug: string, activityId: string): string {
+  return `${citySlug}::${activityId}`;
 }
 
 export function loadActivityPreferences(): ActivityPreferencesMap {

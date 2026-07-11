@@ -140,10 +140,10 @@ function main() {
   const indexSlugs = new Set(index.map((e) => e.slug));
   const fileSlugs = new Set(files.map((f) => f.replace(/\.json$/, "")));
 
-  for (const slug of indexSlugs) {
+  for (const slug of Array.from(indexSlugs)) {
     if (!fileSlugs.has(slug)) allErrors.push(`index.json lists "${slug}" but no city file exists`);
   }
-  for (const slug of fileSlugs) {
+  for (const slug of Array.from(fileSlugs)) {
     if (!indexSlugs.has(slug)) allErrors.push(`city file "${slug}.json" is missing from index.json`);
   }
 

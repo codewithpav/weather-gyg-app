@@ -1,328 +1,202 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { trackEvent } from "../lib/analytics";
 import type { ActivityPreferenceState } from "../lib/userPrefs";
+import type { TodayActivity } from "../pages/api/today";
 
 interface ActivityCardProps {
-  city: string;
-  title: string;
-  description: string;
-  whyNow: string;
-  reasonLabel?: string;
-  duration: string;
-  priceHint?: string;
-  icon?: string;
-  providerLabel?: string;
-  imageUrl?: string;
-  reasonTags?: string[];
-  showBookingCta?: boolean;
-  showPriceLevel?: boolean;
-  providerLinks?: {
-    getYourGuide?: string;
-    klook?: string;
-    viator?: string;
-  };
-  trackingContext?: {
-    section: "best_now" | "bookable";
-    position: number;
-    selectedVibes?: string[];
-    weatherSummary?: string;
-  };
-  activityState?: ActivityPreferenceState | null;
-  onChangeActivityState?: (next: ActivityPreferenceState | null) => void;
+  activity: TodayActivity;
+  citySlug: string;
+  cityName: string;
+  section: "free" | "insider" | "bookable";
+  preference?: ActivityPreferenceState;
+  onSetPreference: (activityId: string, state: ActivityPreferenceState | null) => void;
 }
 
-const iconButtonClass =
-  "inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors";
-
-function getPriceLevel(priceHint?: string): "$" | "$$" | "$$$" {
-  if (!priceHint) return "$";
-  const hint = priceHint.toLowerCase();
-
-  if (
-    hint.includes("free") ||
-    hint.includes("budget") ||
-    hint.includes("low") ||
-    hint.includes("cheap")
-  ) {
-    return "$";
-  }
-  if (
-    hint.includes("premium") ||
-    hint.includes("luxury") ||
-    hint.includes("high") ||
-    hint.includes("expensive")
-  ) {
-    return "$$$";
-  }
-
-  const match = hint.match(/(\d+(\.\d+)?)/);
-  if (match) {
-    const value = Number(match[1]);
-    if (!Number.isNaN(value)) {
-      if (value < 20) return "$";
-      if (value < 60) return "$$";
-      return "$$$";
-    }
-  }
-  return "$$";
-}
-
-const PlayIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10z" />
-    <circle cx="12" cy="11" r="2.2" />
-  </svg>
-);
+const SECTION_ACCENT: Record<ActivityCardProps["section"], string> = {
+  free: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  insider: "bg-violet-50 text-violet-700 border-violet-200",
+  bookable: "bg-amber-50 text-amber-700 border-amber-200",
+};
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({
-  city,
-  title,
-  description,
-  whyNow,
-  reasonLabel = "Why now",
-  duration,
-  priceHint,
-  icon = "✨",
-  providerLabel = "Check availability",
-  imageUrl,
-  reasonTags = [],
-  showBookingCta = false,
-  showPriceLevel = true,
-  providerLinks,
-  trackingContext,
-  activityState = null,
-  onChangeActivityState,
+  activity,
+  citySlug,
+  cityName,
+  section,
+  preference,
+  onSetPreference,
 }) => {
-  const mapQuery = encodeURIComponent(`${title} ${city}`);
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
-  const youtubeQuery = encodeURIComponent(`${title} ${city} travel guide`);
-  const youtubeUrl = `https://www.youtube.com/results?search_query=${youtubeQuery}`;
-  const priceLevel = getPriceLevel(priceHint);
-
+  const impressionSent = useRef(false);
   useEffect(() => {
+    if (impressionSent.current) return;
+    impressionSent.current = true;
     trackEvent("card_impression", {
-      city,
-      title,
-      section: trackingContext?.section || "best_now",
-      position: trackingContext?.position ?? 0,
-      vibes: trackingContext?.selectedVibes || [],
-      weatherSummary: trackingContext?.weatherSummary || "",
+      city: citySlug,
+      section,
+      activityId: activity.id,
+      title: activity.title,
     });
-  }, [
-    city,
-    title,
-    trackingContext?.section,
-    trackingContext?.position,
-    trackingContext?.selectedVibes,
-    trackingContext?.weatherSummary,
-  ]);
+  }, [activity.id, activity.title, citySlug, section]);
 
-  const baseTrackingPayload = {
-    city,
-    title,
-    section: trackingContext?.section || "best_now",
-    position: trackingContext?.position ?? 0,
-    vibes: trackingContext?.selectedVibes || [],
-    weatherSummary: trackingContext?.weatherSummary || "",
+  const trackingPayload = {
+    city: citySlug,
+    section,
+    activityId: activity.id,
+    title: activity.title,
   };
-  const actionButtonBase =
-    "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors";
+
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${activity.title} ${cityName}`
+  )}`;
+
+  const toggle = (state: ActivityPreferenceState) => {
+    const next = preference === state ? null : state;
+    onSetPreference(activity.id, next);
+    if (next === "saved") trackEvent("save_click", trackingPayload);
+    if (next === "dismissed") trackEvent("dismiss_click", trackingPayload);
+    if (next === "done") trackEvent("done_click", trackingPayload);
+  };
+
+  const dimmed = preference === "done";
 
   return (
-    <article className="flex flex-col rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      {imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageUrl}
-          alt={title}
-          className="h-32 w-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        <div className="h-32 w-full bg-gradient-to-tr from-sky-100 via-slate-50 to-emerald-100" />
+    <article
+      className={`group flex flex-col rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 ${
+        dimmed ? "opacity-70" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-xl">
+            {activity.icon}
+          </span>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
+              {activity.title}
+              {preference === "done" && <span className="ml-2">✅</span>}
+            </h3>
+            {activity.neighborhood && (
+              <p className="text-xs text-slate-400">{activity.neighborhood}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            title={preference === "saved" ? "Unsave" : "Save"}
+            onClick={() => toggle("saved")}
+            className={`rounded-full p-1.5 text-sm transition-colors ${
+              preference === "saved"
+                ? "bg-rose-100 text-rose-600"
+                : "text-slate-300 hover:bg-slate-50 hover:text-rose-400"
+            }`}
+          >
+            {preference === "saved" ? "♥" : "♡"}
+          </button>
+          <button
+            type="button"
+            title="Done it"
+            onClick={() => toggle("done")}
+            className={`rounded-full p-1.5 text-sm transition-colors ${
+              preference === "done"
+                ? "bg-emerald-100 text-emerald-600"
+                : "text-slate-300 hover:bg-slate-50 hover:text-emerald-500"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            type="button"
+            title="Not for me"
+            onClick={() => toggle("dismissed")}
+            className="rounded-full p-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-500"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-3 text-sm text-slate-600">{activity.description}</p>
+
+      {activity.insiderNote && (
+        <p className="mt-2 rounded-2xl bg-violet-50/70 px-3 py-2 text-xs text-violet-800">
+          <span className="font-semibold">Local tip:</span> {activity.insiderNote}
+        </p>
       )}
-      <div className="flex-1 p-4 flex flex-col">
-        <h3 className="text-sm sm:text-base font-semibold text-slate-900 flex items-center gap-2">
-          <span>{icon}</span>
-          {title}
-        </h3>
-        <p className="mt-1 text-xs sm:text-sm text-slate-500 flex-1">
-          {description}
-        </p>
-        <p className="mt-2 text-xs text-emerald-700 bg-emerald-50 rounded-full inline-flex px-2 py-0.5">
-          {reasonLabel}: {whyNow}
-        </p>
-        {reasonTags.length > 0 && (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {reasonTags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+
+      <p className="mt-2 text-xs text-slate-400">{activity.whyNow}</p>
+
+      {activity.caution && (
+        <p className="mt-1 text-xs font-medium text-amber-600">⚠️ {activity.caution}</p>
+      )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {activity.reasonTags.map((tag) => (
+          <span
+            key={tag}
+            className={`rounded-full border px-2 py-0.5 text-[11px] ${SECTION_ACCENT[section]}`}
+          >
+            {tag}
+          </span>
+        ))}
+        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
+          ⏱ {activity.durationLabel}
+        </span>
+        {activity.priceHint && (
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
+            {activity.priceHint}
+          </span>
         )}
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-          <span>{duration}</span>
-          {showPriceLevel ? <span title="Estimated budget level">{priceLevel}</span> : <span />}
-        </div>
+      </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() =>
-                onChangeActivityState?.(activityState === "saved" ? null : "saved")
-              }
-              className={`${actionButtonBase} ${
-                activityState === "saved"
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                onChangeActivityState?.(
-                  activityState === "dismissed" ? null : "dismissed"
-                )
-              }
-              className={`${actionButtonBase} ${
-                activityState === "dismissed"
-                  ? "border-amber-300 bg-amber-50 text-amber-700"
-                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              Dismiss
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                onChangeActivityState?.(activityState === "done" ? null : "done")
-              }
-              className={`${actionButtonBase} ${
-                activityState === "done"
-                  ? "border-sky-300 bg-sky-50 text-sky-700"
-                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              Done
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackEvent("maps_click", trackingPayload)}
+          className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          📍 Map
+        </a>
+        {activity.providerLinks && (
+          <>
             <a
-              href={youtubeUrl}
+              href={activity.providerLinks.getYourGuide}
               target="_blank"
-              rel="noreferrer"
-              aria-label="Watch related videos on YouTube"
-              title="Watch related videos on YouTube"
-              className={iconButtonClass}
-              onClick={() => trackEvent("youtube_click", baseTrackingPayload)}
+              rel="noopener noreferrer sponsored"
+              onClick={() =>
+                trackEvent("provider_click", { ...trackingPayload, provider: "getyourguide" })
+              }
+              className="rounded-full bg-slate-900 px-3.5 py-1 text-xs font-medium text-white transition-colors hover:bg-slate-700"
             >
-              <PlayIcon />
+              Book on GetYourGuide
             </a>
             <a
-              href={mapUrl}
+              href={activity.providerLinks.viator}
               target="_blank"
-              rel="noreferrer"
-              aria-label="Open in maps"
-              title="Open in maps"
-              className={iconButtonClass}
-              onClick={() => trackEvent("maps_click", baseTrackingPayload)}
+              rel="noopener noreferrer sponsored"
+              onClick={() =>
+                trackEvent("provider_click", { ...trackingPayload, provider: "viator" })
+              }
+              className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 transition-colors hover:bg-slate-50"
             >
-              <MapPinIcon />
+              Viator
             </a>
-          </div>
-        </div>
-        {showBookingCta && (
-          <div className="mt-3">
-            <p className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">
-              {providerLabel}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {providerLinks?.getYourGuide && (
-                <a
-                  href={providerLinks.getYourGuide}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
-                  onClick={() =>
-                    trackEvent("provider_click", {
-                      ...baseTrackingPayload,
-                      provider: "getyourguide",
-                    })
-                  }
-                >
-                  GetYourGuide
-                </a>
-              )}
-              {providerLinks?.klook && (
-                <a
-                  href={providerLinks.klook}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
-                  onClick={() =>
-                    trackEvent("provider_click", {
-                      ...baseTrackingPayload,
-                      provider: "klook",
-                    })
-                  }
-                >
-                  Klook
-                </a>
-              )}
-              {providerLinks?.viator && (
-                <a
-                  href={providerLinks.viator}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-50"
-                  onClick={() =>
-                    trackEvent("provider_click", {
-                      ...baseTrackingPayload,
-                      provider: "viator",
-                    })
-                  }
-                >
-                  Viator
-                </a>
-              )}
-            </div>
-          </div>
+            <a
+              href={activity.providerLinks.klook}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              onClick={() =>
+                trackEvent("provider_click", { ...trackingPayload, provider: "klook" })
+              }
+              className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              Klook
+            </a>
+          </>
         )}
       </div>
     </article>
   );
 };
-
