@@ -29,7 +29,12 @@ interface LandingProps {
 export const getStaticProps: GetStaticProps<LandingProps> = async () => {
   const { getCityIndex, loadCity } = await import("../lib/content/loader");
   const index = getCityIndex();
-  const cities: CityOption[] = index.map(({ slug, name, country }) => ({ slug, name, country }));
+  const cities: CityOption[] = index.map(({ slug, name, country }) => ({
+    slug,
+    name,
+    country,
+    region: regionFor(country),
+  }));
 
   const regionFor = (country: string) => {
     const europe = new Set(["Netherlands","Greece","Spain","Germany","Hungary","Italy","Portugal","United Kingdom","France","Czech Republic","Austria","Türkiye"]);
@@ -52,10 +57,10 @@ export const getStaticProps: GetStaticProps<LandingProps> = async () => {
         slug: city.slug,
         name: city.name,
         country: city.country,
-        illustrationUrl: city.illustrationUrl,
-        heroImageUrl: city.heroImageUrl,
-        blurb: city.localTips && city.localTips.length > 0 ? city.localTips[0] : undefined,
-        region: regionFor(city.country),
+        illustrationUrl: city.illustrationUrl ?? null,
+        heroImageUrl: city.heroImageUrl ?? null,
+        blurb: city.localTips && city.localTips.length > 0 ? city.localTips[0] : null,
+        region: regionFor(city.country) ?? null,
       } as FeaturedCity;
     })
     .filter(Boolean) as FeaturedCity[];
