@@ -7,7 +7,8 @@ export type AnalyticsEventName =
   | "provider_click"
   | "save_click"
   | "dismiss_click"
-  | "done_click";
+  | "done_click"
+  | "nearest_city_shown";
 
 export type AnalyticsPayload = Record<string, unknown>;
 
